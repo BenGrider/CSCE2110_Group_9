@@ -69,7 +69,24 @@ vector<vector<int>> toAdjacencyList(unordered_map<string, vector<string>> map, v
     return adjacencyList;
 }
 
+void choseFunctionOne(vector<string> indexToCity , vector<vector<int>> adjacencyList) {
+
+    cout << "Choose the int value representing the country you are travelling From: " << endl;
+    cin >> int fromCityInt;
+
+    cout << "Choose the int value representing the country you are travelling To: " << endl;
+    cin >> int toCityInt;
+
+    cout << "Choose the int value representing the amount of maximum connections " << endl;
+    cin >> int maxConnections;
+
+    functionOne(adjacencyList, fromCityInt, toCityInt, maxConnections, indexToCity);
+    
+    return;
+    
+}
 //BFS Algorithim
+//I am in city a, can I fly to city B, with less than x connections. Give the the smallest number of connections and tell me the route. If not tell me
 void functionOne(vector<vector<int>> adjacencyList, int from, int to, int maxConnections, vector<string> indexToCity) {
     queue<int> q; 
     vector<int> distance(adjacencyList.size(), -1);
@@ -144,7 +161,25 @@ void functionOne(vector<vector<int>> adjacencyList, int from, int to, int maxCon
 
 }
 
+void choseFunctionTwo(vector<vector<int>> adjacencyList, vector<string> indexToCity) {
+    
+    cout << "Choose the int value representing the country you are travelling From: " << endl;
+    cin >> int from;
 
+    cout << "Choose the int value representing the country you are travelling To: " << endl;
+    cin >> int to;
+
+    cout << "Choose the first int value representing the country you are connecting through: " << endl;
+    cin >> int connectOne;
+
+    cout << "Choose the second int value representing the country you are connecting through: " << endl;
+    cin >> int connectTwo;
+
+    functionOne(adjacencyList, from, to, connectOne, ConnectTwo, indexToCity);
+    
+    return;
+}
+void functionTwo(vector<vector<int>> adjacencyList, int from, int to, int connectOne, int connectTwo, vector<string> indexToCity)
 
 int main() {
     int toCityInt;
@@ -160,18 +195,8 @@ int main() {
     }
     vector<vector<int>> adjacencyList = toAdjacencyList(map, indexToCity);
 
+    //choseFunctionOne(indexToCity, adjacencyList);
+    choseFunctionTwo(indexToCity, adjacencyList);
 
-
-    cout << "Choose the int value representing the country you are travelling From: " << endl;
-    cin >> fromCityInt;
-
-    cout << "Choose the int value representing the country you are travelling To: " << endl;
-    cin >> toCityInt;
-
-    cout << "Choose the int value representing the amount of maximum connections " << endl;
-    cin >> maxConnections;
-
-    functionOne(adjacencyList, fromCityInt, toCityInt, maxConnections, indexToCity);
-    
     return 0;
 }
