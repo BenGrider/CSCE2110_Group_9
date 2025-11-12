@@ -68,19 +68,22 @@ vector<vector<int>> toAdjacencyList(unordered_map<string, vector<string>> map, v
     }
     return adjacencyList;
 }
+/*
 
 void choseFunctionOne(vector<string> indexToCity , vector<vector<int>> adjacencyList) {
 
+int from, to, maxConnections;
+
     cout << "Choose the int value representing the country you are travelling From: " << endl;
-    cin >> int fromCityInt;
+    cin >> from;
 
     cout << "Choose the int value representing the country you are travelling To: " << endl;
-    cin >> int toCityInt;
+    cin >> to;
 
     cout << "Choose the int value representing the amount of maximum connections " << endl;
-    cin >> int maxConnections;
+    cin >> maxConnections;
 
-    functionOne(adjacencyList, fromCityInt, toCityInt, maxConnections, indexToCity);
+    functionOne(adjacencyList, from, to, maxConnections, indexToCity);
     
     return;
     
@@ -150,7 +153,9 @@ void functionOne(vector<vector<int>> adjacencyList, int from, int to, int maxCon
     for(int i = to ; i != -1 ; i = parent[i]) {
         finalRoute.push_back(i);
     }
-    int connectionsUsed = finalRoute.size() - 2;
+
+    int flightsUsed = distance[to];
+    int connectionsUsed = flightsUsed - 1;
     cout << "The route from " << indexToCity[from] << " to " << indexToCity[to] << " is " << endl;
     for(int i = finalRoute.size() - 1 ; i>=0 ; i--) {
         cout << indexToCity[finalRoute[i]];
@@ -160,26 +165,85 @@ void functionOne(vector<vector<int>> adjacencyList, int from, int to, int maxCon
     return;
 
 }
+*/
+/*
+void choseFunctionTwo(vector<string> indexToCity,vector<vector<int>> adjacencyList) {
 
-void choseFunctionTwo(vector<vector<int>> adjacencyList, vector<string> indexToCity) {
+    int from, to, connectOne, connectTwo;
     
     cout << "Choose the int value representing the country you are travelling From: " << endl;
-    cin >> int from;
+    int from;
+    cin >> from;
 
     cout << "Choose the int value representing the country you are travelling To: " << endl;
-    cin >> int to;
+    int to;
+    cin >> to;
 
     cout << "Choose the first int value representing the country you are connecting through: " << endl;
-    cin >> int connectOne;
+    cin >> connectOne;
 
     cout << "Choose the second int value representing the country you are connecting through: " << endl;
-    cin >> int connectTwo;
+    cin >> connectTwo;
 
-    functionOne(adjacencyList, from, to, connectOne, ConnectTwo, indexToCity);
+    functionTwo(adjacencyList, from, to, connectOne, connectTwo, indexToCity);
     
     return;
 }
-void functionTwo(vector<vector<int>> adjacencyList, int from, int to, int connectOne, int connectTwo, vector<string> indexToCity)
+
+void functionTwo(vector<vector<int>> adjacencyList, int from, int to, int connectOne, int connectTwo, vector<string> indexToCity) {
+
+}
+*/
+
+void dfs(int curr, vector<vector<int>>& adjacencyList, vector<bool>& visited, vector<int>& route) {
+    visited[curr] = true;
+
+    // for each neighbor in adjacencyList
+    for(int neighbor : adjacencyList[curr]) {
+
+        if(!visited[neighbor]) {
+
+            //
+            route.push_back(neighbor);
+
+            dfs(neighbor, adjacencyList, visited, route);
+
+            //add curr on return
+            route.push_back(curr);
+        }
+    }
+}
+
+/*
+vector<vector<int>> BFSSpanningTree(vector<vector<int>>& adjacencyList, int startingCity) {
+    int size = adjacencyList.size();
+    vector<vector<int>> spanningTree
+    return spanningTree;
+}
+*/
+
+void functionThree(vector<vector<int>> adjacencyList, int startingCity, vector<string> indexToCity) {
+    //DFS from starting City
+    //Go on walk
+        //going from curr to neighbor -> add neighbor to route
+        //on return, append curr again
+    int size = adjacencyList.size();
+    //create a boolean vector of size of list, then set all to false
+    vector<bool> visited(size,false);
+    //create route
+    vector<int> route;
+
+    route.push_back(startingCity);
+
+    //start the walk
+    dfs(startingCity, adjacencyList, visited, route);
+
+    for(int i = 0 ; i < route.size() ; i++) {
+        cout << indexToCity[route[i]];
+        if(i+1 < route.size()) {cout << " | " ;}
+    }
+    cout << endl << endl;
+}
 
 int main() {
     int toCityInt;
@@ -196,7 +260,8 @@ int main() {
     vector<vector<int>> adjacencyList = toAdjacencyList(map, indexToCity);
 
     //choseFunctionOne(indexToCity, adjacencyList);
-    choseFunctionTwo(indexToCity, adjacencyList);
+    //choseFunctionTwo(indexToCity, adjacencyList);
+    functionThree(adjacencyList, 0, indexToCity);
 
     return 0;
 }
