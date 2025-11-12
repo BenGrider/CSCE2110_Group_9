@@ -2,97 +2,176 @@
 #include <fstream>
 #include <unordered_map>
 #include <vector>
+#include <queue>
 #include <string>
 
 using namespace std;
 
-void displayWelcome() {
-    string welcomeMessage = "\nWelcome to World Airlines! please choose one of the following options...\n\n";
-    string askFlyAtoBWithinXConnections = "\tType 1: Find the shortest connections between City A to City B\n";
-    string askFlyAtoDconnectingBandC = "\tType 2: Fly from City A to City B connecting through Cities C and D\n";
-    string askFlyShortestRoundTrip = "\tType 3: Fly from city A through all available cities in a round trip\n";
-    string askFlyConnectingThreeFlights = "\tType 4: Connect Three passengers to closest City\n";
-
-    cout << welcomeMessage;
-    cout << askFlyAtoBWithinXConnections;
-    cout << askFlyAtoDconnectingBandC;
-    cout << askFlyShortestRoundTrip;
-    cout << askFlyConnectingThreeFlights << endl;
-}
-
-string getCountryFromString(string line) {
+string getCityFromString(string line) {
     string cleanedString = line.substr(7);
     return cleanedString;
-};
+}
 
-void toMap() {
-
+unordered_map<string, vector<string>> readFile() {
     string line;
-    ifstream flightDirectory ("flight.txt");
+    ifstream flightDirectory("flight.txt");
+
     //unordered map acts as a key value pairs, with the key being the FROM country and the value being a vector of the destination countries
     unordered_map<string, vector<string>> map;
     bool isFrom;
-    vector<string> toCountries, fromCountries;
-    vector<vector<string>> allToCountries;
-    string toCountry, fromCountry;
-
+    vector<string> toCities, fromCities;
+    vector<vector<string>> allToCities;
+    string toCity, fromCity;
 
     //Gets all of the destinations and puts them in their respective vectors
-    if(flightDirectory.is_open()) {
-        while(getline(flightDirectory,line)) {
+    if (flightDirectory.is_open()) {
+        while (getline(flightDirectory, line)) {
+            string city = getCityFromString(line);
 
-            string country = getCountryFromString(line);
-            if(line.at(0) == 'F') { 
-                fromCountries.push_back(country);
-                if(!toCountries.empty()) { allToCountries.push_back(toCountries); }
-                toCountries.clear();
+            if (line.at(0) == 'F') {
+                fromCities.push_back(city);
+                if (!toCities.empty()) {
+                    allToCities.push_back(toCities);
+                }
+                toCities.clear();
+            } else {
+                toCities.push_back(city);
             }
-            else {
-                toCountries.push_back(country);
-            } 
-            
-    }
-    allToCountries.push_back(toCountries);
-
-    flightDirectory.close();
-    }
-    else { cout << "file is closed"; }
-  
-    //converts the vectors into a hashmap
-    for(int i = 0 ; i < fromCountries.size() ; i++) {
-        //map.insert(fromCountries[i], allToCountries[i]);
-        map[fromCountries[i]] = allToCountries[i];
-    }
-
-    //Prints the hashmap
-    for(pair<string, vector<string>> pair : map) {
-        cout << "From: " << pair.first << endl << "\t";
-        for(string s : pair.second) {
-            cout << s << " | ";
         }
-        cout << endl;
+
+        allToCities.push_back(toCities);
+        flightDirectory.close();
+    } else {
+        cout << "file is closed";
     }
 
-};
+    //converts the vectors into a hashmap
+    for (int i = 0; i < fromCities.size(); i++) {
+        map[fromCities[i]] = allToCities[i];
+    }
+    return map;
+}
+
+vector<vector<int>> toAdjacencyList(unordered_map<string, vector<string>> map, vector<string> indexToCity ) {
+    int size = indexToCity.size();
+    vector<vector<int>> adjacencyList(size);
+
+    for(int i = 0 ; i < size ; i++) {
+        for(string fromCity : map[indexToCity[i]]) {
+            for(int j = 0 ; j < size ; j++) {
+                if(indexToCity[j] == fromCity) {
+                    adjacencyList[i].push_back(j);
+                    break;
+                }
+            }
+        }
+    }
+    return adjacencyList;
+}
+
+//BFS Algorithim
+void functionOne(vector<vector<int>> adjacencyList, int from, int to, int maxConnections, vector<string> indexToCity) {
+    queue<int> q; 
+    vector<int> distance(adjacencyList.size(), -1);
+    vector<int> parent(adjacencyList.size(), -1);
+    bool found = false;
+
+    //start is finish
+    if(from == to) {
+        cout << "Already at Location: 0 flights to - " << indexToCity[from] << endl;
+        return;
+    }
+
+    //set the first node in queue to be the from node and set that distance to 0
+    q.push(from);
+    distance[from] = 0;
+
+
+    //While the queue is not empty and the connections is not found
+    while(!q.empty() && !found) {
+
+        //set the curr node from the starting node and pop the from node out
+        int curr = q.front();
+        q.pop();
+
+        //if we are within our connection, continue
+        if(distance[curr] < maxConnections) {
+
+            //for each neighbor in adjacency list
+            for(int neighbor : adjacencyList[curr]) {
+
+                //if not visited, visit
+                if(distance[neighbor] == -1) {
+                    distance[neighbor] = distance[curr] + 1;
+                    parent[neighbor] = curr;
+                    q.push(neighbor);
+
+                    //if found, break
+                    if(neighbor == to) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    //node not found at all (if max connections is too high)
+    if(!found || distance[to] == -1) {
+        cout << "No route exists" << endl;
+        return;
+    }
+
+    //node not in within allowed connections
+    else if(distance[to] > maxConnections) {
+        cout << "No route within " << maxConnections << " flights" << endl;
+        return;
+    }
+
+    //print final route and return to main()
+    vector<int> finalRoute;
+    for(int i = to ; i != -1 ; i = parent[i]) {
+        finalRoute.push_back(i);
+    }
+    int connectionsUsed = finalRoute.size() - 2;
+    cout << "The route from " << indexToCity[from] << " to " << indexToCity[to] << " is " << endl;
+    for(int i = finalRoute.size() - 1 ; i>=0 ; i--) {
+        cout << indexToCity[finalRoute[i]];
+        if(i > 0) { cout << " | "; }
+    }
+    cout << endl << "Smallest number of connections: " << connectionsUsed << endl << endl;
+    return;
+
+}
+
 
 
 int main() {
+    int toCityInt;
+    int fromCityInt;
+    int maxConnections;
+    vector<string> indexToCity;
+    unordered_map<string, vector<string>> map = readFile();
+    int i = 0;
+    //Used to show available countries to choose for function 1, also now fills indexToCity
+    for (pair<string, vector<string>> pair : map) {
+        indexToCity.push_back(pair.first);
+        cout << i++ << " - From: " << pair.first << endl;
+    }
+    vector<vector<int>> adjacencyList = toAdjacencyList(map, indexToCity);
 
-    string appendFromCity = "What city is the passenger flying from?\n";
-    string askToCity = "What city is the passenger flying to?\n";
 
-    //planning on putting these into an array of answers for cases 2 and 4
-    string fromCity;
-    string toCity;
-    int maxAllowedConnections;
 
-    toMap();
-/*
-    displayWelcome();
+    cout << "Choose the int value representing the country you are travelling From: " << endl;
+    cin >> fromCityInt;
 
-    int function1to4;
-    cin >> function1to4;
-    cout << "You have chosen function " << function1to4 << endl;
-*/
+    cout << "Choose the int value representing the country you are travelling To: " << endl;
+    cin >> toCityInt;
+
+    cout << "Choose the int value representing the amount of maximum connections " << endl;
+    cin >> maxConnections;
+
+    functionOne(adjacencyList, fromCityInt, toCityInt, maxConnections, indexToCity);
+    
     return 0;
-};
+}
