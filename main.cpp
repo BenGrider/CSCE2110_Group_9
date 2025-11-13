@@ -245,6 +245,32 @@ void functionThree(vector<vector<int>> adjacencyList, int startingCity, vector<s
     cout << endl << endl;
 }
 
+/*
+//Q4: choose best meeting city and print the three routes
+void functionFour(vector<vector<int>>& adjacencyList, vector<string>& indexToCity) {
+    int A,B,C;
+    cout <<"Find meeting city";
+    for(int i = 0; i<(int)indexToCity.size(); i++){
+        cout << i << " - " << indexToCity[i]<<"\n";
+    }
+    cout <<"Enter three city indices: ";
+    if(!(cin >>A>>B>>C)) {
+        cout << "Invalid input\n"; return;
+    }
+
+    int n = (int)adjacencyList.size();
+    if (A<0||A>=n||B<0||B>=n||C<0||C>=n) {
+        cout << "Invalid indices\n";
+        return;
+        }
+    //BFS dist+parent from each source
+
+
+    //choose meeting city minimizing sum of hops(exclude A,B,C)
+    
+}
+*/
+
 int main() {
     int toCityInt;
     int fromCityInt;
