@@ -68,7 +68,7 @@ vector<vector<int>> toAdjacencyList(unordered_map<string, vector<string>> map, v
     }
     return adjacencyList;
 }
-/*
+
 
 void choseFunctionOne(vector<string> indexToCity , vector<vector<int>> adjacencyList) {
 
@@ -165,7 +165,7 @@ void functionOne(vector<vector<int>> adjacencyList, int from, int to, int maxCon
     return;
 
 }
-*/
+
 /*
 void choseFunctionTwo(vector<string> indexToCity,vector<vector<int>> adjacencyList) {
 
@@ -245,31 +245,78 @@ void functionThree(vector<vector<int>> adjacencyList, int startingCity, vector<s
     cout << endl << endl;
 }
 
-/*
-//Q4: choose best meeting city and print the three routes
+
+// ===== Q4: Best meeting city (compact, no helpers) =====
 void functionFour(vector<vector<int>>& adjacencyList, vector<string>& indexToCity) {
-    int A,B,C;
-    cout <<"Find meeting city";
-    for(int i = 0; i<(int)indexToCity.size(); i++){
-        cout << i << " - " << indexToCity[i]<<"\n";
-    }
-    cout <<"Enter three city indices: ";
-    if(!(cin >>A>>B>>C)) {
-        cout << "Invalid input\n"; return;
-    }
-
     int n = (int)adjacencyList.size();
-    if (A<0||A>=n||B<0||B>=n||C<0||C>=n) {
-        cout << "Invalid indices\n";
-        return;
+    if(n == 0){ cout << "no such city\n"; return; }
+
+    // let user pick A, B, C (by index)
+    cout << "\n--- Q4: Find meeting city ---\n";
+    for(int i=0;i<n;i++) cout << i << " - " << indexToCity[i] << "\n";
+    int A,B,C;
+    cout << "Enter three city indices (A B C): ";
+    if(!(cin >> A >> B >> C)){ cout << "invalid input\n"; return; }
+    if(A<0||A>=n||B<0||B>=n||C<0||C>=n){ cout << "invalid indices\n"; return; }
+
+    // dist[k][u] and parent[k][u] for sources k=0..2 => A,B,C
+    int src[3] = {A,B,C};
+    vector<vector<int>> dist(3, vector<int>(n, -1));
+    vector<vector<int>> parent(3, vector<int>(n, -1));
+
+    auto bfs = [&](int k){
+        queue<int> q;
+        int s = src[k];
+        dist[k][s] = 0;
+        q.push(s);
+        while(!q.empty()){
+            int u = q.front(); q.pop();
+            for(int v : adjacencyList[u]){
+                if(dist[k][v] == -1){
+                    dist[k][v] = dist[k][u] + 1;
+                    parent[k][v] = u;
+                    q.push(v);
+                }
+            }
         }
-    //BFS dist+parent from each source
+    };
 
+    // run BFS from A, B, C
+    for(int k=0;k<3;k++) bfs(k);
 
-    //choose meeting city minimizing sum of hops(exclude A,B,C)
-    
+    // choose meeting city with min sum of hops (exclude A/B/C)
+    int meet = -1, best = INT_MAX;
+    for(int u=0; u<n; ++u){
+        if(u==A || u==B || u==C) continue;
+        if(dist[0][u]==-1 || dist[1][u]==-1 || dist[2][u]==-1) continue; // someone can't reach u
+        int s = dist[0][u] + dist[1][u] + dist[2][u];
+        if(s < best){ best = s; meet = u; }
+    }
+
+    if(meet == -1){ cout << "no such city\n"; return; }
+
+    // tiny route printer that walks parent[k] from meet back to src[k]
+    auto printPath = [&](int k, const string& label){
+        vector<int> rev; // meet -> ... -> src
+        for(int cur = meet; cur != -1; cur = parent[k][cur]) rev.push_back(cur);
+        cout << label;
+        // print reversed order: src -> ... -> meet
+        for(int i=(int)rev.size()-1; i>=0; --i){
+            cout << indexToCity[rev[i]];
+            if(i>0) cout << " to ";
+        }
+        int hops = (int)rev.size() - 1;
+        cout << " (" << hops << " connections)\n";
+        return hops;
+    };
+
+    cout << "You three should meet at " << indexToCity[meet] << "\n";
+    int cA = printPath(0, "Route for first person: ");
+    int cB = printPath(1, "Route for second person: ");
+    int cC = printPath(2, "Route for third person: ");
+    cout << "Total number of connection: " << (cA + cB + cC) << "\n";
 }
-*/
+
 
 int main() {
     int toCityInt;
@@ -288,6 +335,7 @@ int main() {
     //choseFunctionOne(indexToCity, adjacencyList);
     //choseFunctionTwo(indexToCity, adjacencyList);
     functionThree(adjacencyList, 0, indexToCity);
+    functionFour(adjacenncyList, indexToCity);
 
     return 0;
 }
