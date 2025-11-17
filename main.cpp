@@ -4,6 +4,7 @@
 #include <vector>
 #include <queue>
 #include <string>
+#include <limits>
 
 using namespace std;
 
@@ -69,7 +70,7 @@ vector<vector<int>> toAdjacencyList(unordered_map<string, vector<string>> map, v
     return adjacencyList;
 }
 
-
+/*
 void choseFunctionOne(vector<string> indexToCity , vector<vector<int>> adjacencyList) {
 
 int from, to, maxConnections;
@@ -88,6 +89,7 @@ int from, to, maxConnections;
     return;
     
 }
+//A to B, least amount of connections: Ben Grider
 //BFS Algorithim
 //I am in city a, can I fly to city B, with less than x connections. Give the the smallest number of connections and tell me the route. If not tell me
 void functionOne(vector<vector<int>> adjacencyList, int from, int to, int maxConnections, vector<string> indexToCity) {
@@ -165,7 +167,7 @@ void functionOne(vector<vector<int>> adjacencyList, int from, int to, int maxCon
     return;
 
 }
-
+*/
 /*
 void choseFunctionTwo(vector<string> indexToCity,vector<vector<int>> adjacencyList) {
 
@@ -195,6 +197,7 @@ void functionTwo(vector<vector<int>> adjacencyList, int from, int to, int connec
 }
 */
 
+//helper function
 void dfs(int curr, vector<vector<int>>& adjacencyList, vector<bool>& visited, vector<int>& route) {
     visited[curr] = true;
 
@@ -203,7 +206,6 @@ void dfs(int curr, vector<vector<int>>& adjacencyList, vector<bool>& visited, ve
 
         if(!visited[neighbor]) {
 
-            //
             route.push_back(neighbor);
 
             dfs(neighbor, adjacencyList, visited, route);
@@ -214,39 +216,79 @@ void dfs(int curr, vector<vector<int>>& adjacencyList, vector<bool>& visited, ve
     }
 }
 
-/*
-vector<vector<int>> BFSSpanningTree(vector<vector<int>>& adjacencyList, int startingCity) {
-    int size = adjacencyList.size();
-    vector<vector<int>> spanningTree
-    return spanningTree;
-}
-*/
-
+//Shortest Round Trip: Ben Grider
 void functionThree(vector<vector<int>> adjacencyList, int startingCity, vector<string> indexToCity) {
-    //DFS from starting City
-    //Go on walk
-        //going from curr to neighbor -> add neighbor to route
-        //on return, append curr again
+    queue<int> q; 
     int size = adjacencyList.size();
-    //create a boolean vector of size of list, then set all to false
-    vector<bool> visited(size,false);
-    //create route
-    vector<int> route;
+    vector<int> parent(size, -1);
+    vector<bool> visited(size, false);
+    bool found = false;
+    int lastCity = -1;
 
-    route.push_back(startingCity);
+    visited[startingCity] = true;
 
-    //start the walk
-    dfs(startingCity, adjacencyList, visited, route);
+    //set the first node in queue to be the from node and set that distance to 0
+    q.push(startingCity);
 
-    for(int i = 0 ; i < route.size() ; i++) {
-        cout << indexToCity[route[i]];
-        if(i+1 < route.size()) {cout << " | " ;}
+
+    //While the queue is not empty and the connections is not found
+    while(!q.empty() && !found) {
+
+        //set the curr node from the starting node and pop the from node out
+        int curr = q.front();
+        q.pop();
+
+        //for each neighbor in adjacency list
+        for(int neighbor : adjacencyList[curr]) {
+
+            //if found, break
+            if(neighbor == startingCity && curr != startingCity) {
+                found = true;
+                lastCity = curr;
+                break;
+            }
+            //if not visited, visit
+            if(!visited[neighbor]) {
+                visited[neighbor] = true;
+                parent[neighbor] = curr;
+                q.push(neighbor);
+            }
+            
+            
+        }
+        
     }
-    cout << endl << endl;
+
+    //node not found at all 
+    if(!found) {
+        cout << "No route exists" << endl;
+        return;
+    }
+
+    vector<int> reverseRoute;
+    for(int i = lastCity ; i != -1 ; i = parent[i]) {
+        reverseRoute.push_back(i);
+    }
+    vector<int> finalRoute;
+    finalRoute.push_back(startingCity);
+    int RRSize = reverseRoute.size() - 1;
+    for(int i = RRSize ; i >= 0 ; i--) {
+        finalRoute.push_back(i);
+    }
+    
+    //print final route and return to main()
+    cout << "The shortest round trip starting at " << indexToCity[startingCity] <<  " is "<< endl;
+    for(int i = finalRoute.size() - 1 ; i>=0 ; i--) {
+        cout << indexToCity[finalRoute[i]];
+        if(i > 0) { cout << " | "; }
+    }
+    cout << "" << endl << endl;
+    return;
+
 }
 
 
-// ===== Q4: Best meeting city (compact, no helpers) =====
+// Q4: Best meeting city: Nhu Pham
 void functionFour(vector<vector<int>>& adjacencyList, vector<string>& indexToCity) {
     int n = (int)adjacencyList.size();
     if(n == 0){ cout << "no such city\n"; return; }
@@ -285,7 +327,8 @@ void functionFour(vector<vector<int>>& adjacencyList, vector<string>& indexToCit
     for(int k=0;k<3;k++) bfs(k);
 
     // choose meeting city with min sum of hops (exclude A/B/C)
-    int meet = -1, best = INT_MAX;
+    int meet = -1;
+    int best = numeric_limits<int>::max();
     for(int u=0; u<n; ++u){
         if(u==A || u==B || u==C) continue;
         if(dist[0][u]==-1 || dist[1][u]==-1 || dist[2][u]==-1) continue; // someone can't reach u
@@ -335,7 +378,7 @@ int main() {
     //choseFunctionOne(indexToCity, adjacencyList);
     //choseFunctionTwo(indexToCity, adjacencyList);
     functionThree(adjacencyList, 0, indexToCity);
-    functionFour(adjacenncyList, indexToCity);
+    functionFour(adjacencyList, indexToCity);
 
     return 0;
 }
