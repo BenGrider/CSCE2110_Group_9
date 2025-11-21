@@ -17,6 +17,8 @@
 #include <map>
 #include <queue>//added to make the BFS shortest path work
 //I'm not implementing a user defined queue
+#include <limits.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -70,19 +72,62 @@ vector<string> cityID;// implemented a dynamic memory of type string for printin
 // CODE FOR Q2!!!
 //attempting on implementing BFS for shortest path
 // BFS shortest path using adjacency matrix
-vector<int> bfsShortestPath(const Graph& g, int start, int goal) //the function parameters are the adjacency matrices that uses the graph class and its members func's, with a source and dest node
+vector<int> bfsShortestPath(const Graph& graph, int startCity, int endCity) //the function parameters are the graph class for memb. func's, with a start and end city
 {
-    queue<vector<int>> q; //queue of dynamic memory vector STL using type int
+    queue<vector<int>> paths; //queue of vector type for BFS trav.
     vector<bool>visited(140, false); //the first parameter is based on the constraints of the sample, 140 cities, each initialized to false as default values
-    //this memory is for checking if the node's been visited
-    q.push(start); //assigning source node to the dynamic memory
-    visited[start] = true; //the initial source node is added as the 1st array data inside the boolean dynamic memory, assigned true
+    //this memory is for checking if the node's been visited 
+    visited[source] = true; //the initial source node is assigned true
     //the source node id ranges from 0-140!
-    while(!q.empty())// a while loop that visits all nodes that'll be adjacent to the source node until destination node is met
+	paths.push({startCity}); //enqueing source node to the queue
+    while(!paths.empty())// a while loop that visits all nodes that'll be adjacent to the source node until destination node is met
     {
-        vector<int> path = q.front();// this will trace the path the BFS takes, think of it as a temp head node!
-        
+        vector<int> currPath = paths.front(); //in BFSshortPath, this is the 1st path in visitedQueue
+        paths.pop();//the 1st node checked is dequed  
+		int currCity = currPath.back();
+		if(currCity == endCity)
+		{
+			return currPath;
+		}
+		for(int neighbor = 0; neighbor < graph.n; neighbor++)
+		{
+			if(adj[currCity][neighbor] == 1)
+			{
+				if(!visited[neighbor])
+				{
+					visited[neighbor] = true;
+					vector<int> newPath = currPath;
+					newPath.push_back(neighbor);
+					paths.push(newPath);
+				}
+			}
+		}
+  }
+	return {};
+}
+
+// this is to print a path of cities, the map STL was chosen for their use of two separate variable types
+void printPath(const vector<int>& path, map<const string,int,strCmp>& cityMap) {
+    //this is where the reverse map is initialized to catalogue the cities visited
+    map<int,string> idToName;
+    for(map<const string,int,strCmp>::iterator it = cityMap.begin(); it != cityMap.end(); ++it) {
+        string cityName = it->first;   // the city name (string) is assigned with the 1st parameter of the map
+        int cityID = it->second;       // the city ID (integer) is assigned with the 2nd parameter of the map
+        idToName[cityID] = cityName;   // store the integer value of the city name to the index of idToName map, in reverse map increasing its size
     }
+
+    //Each city is to then be printed in the path
+    for(size_t i = 0; i < path.size(); i++) {
+        int cityID = path[i];
+        cout << idToName[cityID]; // print the city name
+
+        // this is to add " to " between cities, the if statement is to check "to" isn't being printed after the last city
+        if(i < path.size() - 1) {
+            cout << " to ";
+        }
+    }
+
+    cout << endl;
 }
 
 int main(int argc, char *argv[]){
