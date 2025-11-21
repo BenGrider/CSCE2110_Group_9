@@ -73,7 +73,7 @@ vector<vector<int>> toAdjacencyList(unordered_map<string, vector<string>> map, v
 void printCities(unordered_map<string, vector<string>> map){
     int i = 0;
     for (pair<string, vector<string>> pair : map) {
-        cout << i++ << " - From: " << pair.first << endl;
+        cout << i++ << " -\tFrom: " << pair.first << endl;
     }
 }
 
@@ -144,20 +144,128 @@ void functionOne(vector<vector<int>> adjacencyList, int from, int to, int maxCon
 
     int flightsUsed = distance[to];
     int connectionsUsed = flightsUsed - 1;
+    cout << endl << "----------------------------------------------------------------------" << endl << endl;
     cout << "The route from " << indexToCity[from] << " to " << indexToCity[to] << " is " << endl;
     for(int i = finalRoute.size() - 1 ; i>=0 ; i--) {
         cout << indexToCity[finalRoute[i]];
         if(i > 0) { cout << " | "; }
     }
     cout << endl << "Smallest number of connections: " << connectionsUsed << endl << endl;
+    cout << "----------------------------------------------------------------------" << endl;
     return;
 
 }
 
-//Q2: Shortest Path A to B through C and D: Alan Ortega
-void functionTwo(vector<vector<int>> adjacencyList, int from, int to, int connectOne, int connectTwo, vector<string> indexToCity) {
+bool bfsHelper(vector<vector<int>>& adjacencyList, int from, int to, vector<int>& route) {
+    int size = adjacencyList.size();
+    vector<int> parent(size, -1);
+    vector<int> distance(size, -1);
+    queue<int> q;
+    bool found = false;
 
+    //distance from starting node initialized to 0, then push starting node
+    distance[from] = 0;
+    q.push(from);
+
+    //while node is not found and queue is not empty
+    while(!q.empty() && !found) {
+        int curr = q.front();
+        q.pop();
+
+        //for each neighbor in curr's adjacencyList 
+        for(int neighbor : adjacencyList[curr]) {
+
+            //if neighbor has not been visited, visit it, add it to the parent vector, push it
+            if(distance[neighbor] == -1) {
+                distance[neighbor] = distance[curr] + 1;
+                parent[neighbor] = curr;
+                q.push(neighbor);
+
+                if(neighbor == to) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    //Not found, return false
+    if(!found) { return false; }
+
+    vector<int> routeInReverse;
+    for(int i = to ; i != -1 ; i = parent[i]) {
+        routeInReverse.push_back(i);
+    }
+
+    //since using &route and can run function 2 multple times so it runs more predictably (and correctly :D), clear it, and add new route
+    route.clear();
+    for(int i = routeInReverse.size() - 1 ; i >= 0 ; i--) {
+        route.push_back(routeInReverse[i]);
+    }
+    return true;
 }
+
+//Q2: Shortest Path A to B through C and D: Alan Ortega with Ben Grider's comments
+void functionTwo(vector<vector<int>> adjacencyList, int from, int to, int connectOne, int connectTwo, vector<string> indexToCity) {
+    vector<int> AtoC, CtoD, DtoB, AtoD, DtoC, CtoB;
+    vector<int> routeCD, routeDC, finalRoute;
+
+    //Assume both scenarious to be true, disprove with bfs helper
+    bool AtoCtoDtoB = true;
+    bool AtoDtoCtoB = true;
+
+    //A -> C -> D -> B
+    if(!bfsHelper(adjacencyList, from, connectOne, AtoC)) { AtoCtoDtoB = false; } 
+    if(!bfsHelper(adjacencyList, connectOne, connectTwo, CtoD)) { AtoCtoDtoB = false; } 
+    if(!bfsHelper(adjacencyList, connectTwo, to, DtoB)) { AtoCtoDtoB = false; } 
+
+    //A -> D -> C -> B
+    if(!bfsHelper(adjacencyList, from, connectTwo, AtoD)) { AtoDtoCtoB = false; } 
+    if(!bfsHelper(adjacencyList, connectTwo, connectOne, DtoC)) { AtoDtoCtoB = false; } 
+    if(!bfsHelper(adjacencyList, connectOne, to, CtoB)) { AtoDtoCtoB = false; } 
+
+    if(!AtoCtoDtoB && !AtoDtoCtoB) { cout << "Route does not exist, returning to menu" << endl << endl; return;}
+
+    //If existance of route was not proven wrong, Append and build route ACDB
+    if(AtoCtoDtoB) {
+        //Go through all routes and append them to final route, use i = 1 for second two to not have duplicate cities
+        for(int i = 0 ; i < AtoC.size() ; i++) { routeCD.push_back(AtoC[i]);}
+        for(int i = 1 ; i < CtoD.size() ; i++) { routeCD.push_back(CtoD[i]);}
+        for(int i = 1 ; i < DtoB.size() ; i++) { routeCD.push_back(DtoB[i]);}
+    }
+    //If existance of route was not proven wrong, Append and build route ADCB
+    if(AtoDtoCtoB) {
+        //Go through all routes and append them to final route, use i = 1 for second two to not have duplicate cities
+        for(int i = 0 ; i < AtoD.size() ; i++) { routeDC.push_back(AtoD[i]);}
+        for(int i = 1 ; i < DtoC.size() ; i++) { routeDC.push_back(DtoC[i]);}
+        for(int i = 1 ; i < CtoB.size() ; i++) { routeDC.push_back(CtoB[i]);}
+    }
+
+    if(AtoCtoDtoB && !AtoDtoCtoB) { finalRoute = routeCD; }
+    else if(!AtoCtoDtoB && AtoDtoCtoB) { finalRoute = routeDC; }
+    else {
+        int CDSize = routeCD.size()-1;
+        int DCSize = routeDC.size()-1;
+        (CDSize <= DCSize) ? finalRoute = routeCD : finalRoute = routeDC;
+    }
+
+    int totalFlights = finalRoute.size() - 1;
+    int connectionsUsed = totalFlights - 1;
+
+    cout << endl << "----------------------------------------------------------------------" << endl << endl;
+    cout << "The route from " << indexToCity[from] << " to " << indexToCity[to] << " connecting through " 
+         << indexToCity[connectOne] << " and " << indexToCity[connectTwo] << " is " << endl; 
+
+    for(int i = 0 ; i < totalFlights+1 ; i++) {
+        cout << indexToCity[finalRoute[i]];
+        //print pipe if neccessary
+        if(i < totalFlights) { cout << " | "; }
+    }
+    cout << endl << "Smallest number of connections: " << connectionsUsed << endl; 
+    cout << endl << "----------------------------------------------------------------------" << endl;
+
+    return;
+}   
 
 //Q3: Shortest Round Trip: Ben Grider
 void functionThree(vector<vector<int>>& adjacencyList, int startingCity, vector<string>& indexToCity) {
@@ -223,7 +331,7 @@ void functionThree(vector<vector<int>>& adjacencyList, int startingCity, vector<
         cout << indexToCity[finalRoute[i]];
         if(i > 0) { cout << " | "; }
     }
-    cout << endl << "----------------------------------------------------------------------" << endl;
+    cout << endl << endl << "----------------------------------------------------------------------" << endl;
     return;
 
 }
@@ -284,16 +392,20 @@ void functionFour(vector<vector<int>>& adjacencyList, vector<string>& indexToCit
         return hops;
     };
 
+    cout << endl << "----------------------------------------------------------------------" << endl << endl; 
     cout << "You three should meet at " << indexToCity[meet] << "\n";
     int cA = printPath(0, "Route for first person: ");
     int cB = printPath(1, "Route for second person: ");
     int cC = printPath(2, "Route for third person: ");
     cout << "Total number of connection: " << (cA + cB + cC) << "\n";
+    cout << endl << "----------------------------------------------------------------------" << endl;
 }
 
 void choseFunctionOne(vector<string>& indexToCity , vector<vector<int>>& adjacencyList, unordered_map<string, vector<string>>& map) {
 
     int from, to, maxConnections;
+    int lowerBound = 0;
+    int upperBound = indexToCity.size() - 1;
 
     printCities(map);   
 
@@ -305,6 +417,12 @@ void choseFunctionOne(vector<string>& indexToCity , vector<vector<int>>& adjacen
 
     cout << "Choose the maximum amount of connections " << endl;
     cin >> maxConnections;
+    cout << "\n\n";
+
+    if(from > upperBound || from < lowerBound || to < lowerBound || to > upperBound) {
+        cout << "City is not in bounds does not exist, please try again" << endl << endl; 
+        choseFunctionOne(indexToCity, adjacencyList, map);
+    }
 
     functionOne(adjacencyList, from, to, maxConnections, indexToCity);
     
@@ -315,9 +433,10 @@ void choseFunctionOne(vector<string>& indexToCity , vector<vector<int>>& adjacen
 void choseFunctionTwo(vector<string>& indexToCity, vector<vector<int>>& adjacencyList, unordered_map<string, vector<string>>& map) {
 
     int from, to, connectOne, connectTwo;
-
+    int lowerBound = 0;
+    int upperBound = indexToCity.size() - 1;
     printCities(map);  
-    
+
     cout << "Choose the city you are travelling From: " << endl;
     cin >> from;
 
@@ -329,7 +448,12 @@ void choseFunctionTwo(vector<string>& indexToCity, vector<vector<int>>& adjacenc
 
     cout << "Choose the second city you are connecting through: " << endl;
     cin >> connectTwo;
-
+    cout << "\n\n";
+    
+    if(from > upperBound || from < lowerBound || to < lowerBound || to > upperBound || connectOne < lowerBound || connectOne > upperBound || connectTwo < lowerBound || connectTwo > upperBound) {
+        cout << "City is not in bounds does not exist, please try again" << endl << endl; 
+        choseFunctionTwo(indexToCity, adjacencyList, map);
+    }
     functionTwo(adjacencyList, from, to, connectOne, connectTwo, indexToCity);
     
     return;
@@ -338,12 +462,21 @@ void choseFunctionTwo(vector<string>& indexToCity, vector<vector<int>>& adjacenc
 void choseFunctionThree(vector<string>& indexToCity, vector<vector<int>>& adjacencyList, unordered_map<string, vector<string>>& map) {
 
     int startingCity;
+    int lowerBound = 0;
+    int upperBound = indexToCity.size() - 1;
+
     printCities(map);
 
-    cout << "Choose the int value representing the country you are flying from: " << endl;
+    cout << "Choose the City you are flying from: " << endl;
     cin >> startingCity;
+    cout << "\n\n";
 
+    if(startingCity > upperBound || startingCity < lowerBound ) {
+        cout << "City is not in bounds does not exist, please try again" << endl << endl; 
+        choseFunctionThree(indexToCity, adjacencyList, map);
+    }
     functionThree(adjacencyList, startingCity, indexToCity);
+    
 
     return;
 
@@ -352,6 +485,8 @@ void choseFunctionThree(vector<string>& indexToCity, vector<vector<int>>& adjace
 void choseFunctionFour(vector<string>& indexToCity, vector<vector<int>>& adjacencyList, unordered_map<string, vector<string>>& map) {
 
     int cityA, cityB, cityC;
+    int lowerBound = 0;
+    int upperBound = indexToCity.size() - 1;
     printCities(map);  
 
     cout << "Please choose City 1: " << endl;
@@ -360,27 +495,50 @@ void choseFunctionFour(vector<string>& indexToCity, vector<vector<int>>& adjacen
     cin >> cityB;
     cout << "Please choose City 3: " << endl;
     cin >> cityC;
+    cout << "\n\n";
+    if(cityA > upperBound || cityA < lowerBound || cityB < lowerBound || cityB > upperBound || cityC < lowerBound || cityC > upperBound) {
+        cout << "City is not in bounds does not exist, please try again" << endl << endl; 
+        choseFunctionFour(indexToCity, adjacencyList, map);
+    }
 
     functionFour(adjacencyList, indexToCity, cityA, cityB, cityC);
 
     return;
 }
 
-bool chooseFunction() {
+bool chooseFunction(bool& initial) {
 
-    cout << endl << endl;
-    cout << "Hello and Welcome to World Airlines!" << endl;
-    cout << "What can we assist you with today?" << endl << endl;
+    if(initial) {
+        cout << endl << endl;
+        cout << "**********************************************************************" << endl;
+        cout << "**********************************************************************" << endl;
+        cout << R"(*  -.                 `|.           ( )             .`)              *)" << endl;
+        cout << R"(*   |:\-,              .| \.       (_.`            (_  )             *)" << endl;
+        cout << R"(*   |: `.------------------------------------.                 .`)   *)" << endl;
+        cout << R"(*   / /   o o o o o o o o o o o o o.-.o o   (_`.              (_  )  *)" << endl;
+        cout << R"(*  /_ \_       WAL    .     .=     |'|         `)        .`)         *)" << endl;
+        cout << R"(*       ``"""""""""""//    /  """"" `"""------"'        (_  )        *)" << endl;
+        cout << R"(*                   //    /                                          *)" << endl;
+        cout << "**********************************************************************" << endl;
+        cout << "**********************************************************************" << endl;
+        cout << "***************                                        ***************" << endl;
+        cout << "***********      Hello and Welcome to World Airlines!      ***********" << endl;
+        cout << "***********       What can we assist you with today?       ***********" << endl;
+        cout << "***************                                        ***************" << endl;
+        cout << "**********************************************************************" << endl;
+        cout << "**********************************************************************" << endl << endl;
+    }
+    initial = false;
 
 
-    cout << "----------------------------------------------------------------------" << endl;
+    cout << "----------------------------------------------------------------------" << endl << endl;
     cout << "Please choose one of the following four opperations" << endl << endl;
 
     cout << "1: Shortest path from City A to City B in X connections or less" << endl;
-    cout << "2: " << endl;
+    cout << "2: Shortest path from City A to City B through City C and City D" << endl;
     cout << "3: Shortest round trip from City A" << endl;
     cout << "4: Closest connecting City from Cities A, B, and C" << endl;
-    cout << "-1: exit" << endl;
+    cout << "-1: exit" << endl << endl;
     cout << "----------------------------------------------------------------------" << endl;
 
     int input;
@@ -401,7 +559,7 @@ bool chooseFunction() {
             choseFunctionOne(indexToCity, adjacencyList, map);
             break;
         case 2:
-            cout << "You have chosen Function 2!"<< endl << "";
+            cout << "You have chosen Function 2!"<< endl << "Shortest path from City A to City B through C and D";
             choseFunctionTwo(indexToCity, adjacencyList, map);
             break;
         case 3:
@@ -422,16 +580,36 @@ bool chooseFunction() {
     int cont;
     cin >> cont;
 
-    if(cont != 1) {cout << "Exiting Simulation" << endl; return false;}
+    if(cont != 1) {
+        cout << endl << endl; 
+        cout << "**********************************************************************" << endl;
+        cout << "**********************************************************************" << endl;
+        cout << R"(*  -.                 `|.           ( )             .`)              *)" << endl;
+        cout << R"(*   |:\-,              .| \.       (_.`            (_  )             *)" << endl;
+        cout << R"(*   |: `.------------------------------------.                 .`)   *)" << endl;
+        cout << R"(*   / /   o o o o o o o o o o o o o.-.o o   (_`.              (_  )  *)" << endl;
+        cout << R"(*  /_ \_       WAL    .     .=     |'|         `)        .`)         *)" << endl;
+        cout << R"(*       ``"""""""""""//    /  """"" `"""------"'        (_  )        *)" << endl;
+        cout << R"(*                   //    /                                          *)" << endl;
+        cout << "**********************************************************************" << endl;
+        cout << "**********************************************************************" << endl;
+        cout << "***************                                        ***************" << endl;
+        cout << "***********     Thank You for choosing World Airlines!     ***********" << endl;
+        cout << "***********         We Hope to see you again soon!         ***********" << endl;
+        cout << "***************                                        ***************" << endl;
+        cout << "**********************************************************************" << endl;
+        cout << "**********************************************************************" << endl << endl;
+        return false;}
 
     return true;
 }
 
 int main() {
 
+    bool initial = true;
     bool running = true;
     while(running) {
-        running = chooseFunction();
+        running = chooseFunction(initial);
     }
 
     return 0;
