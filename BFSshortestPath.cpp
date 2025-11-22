@@ -107,22 +107,26 @@ vector<int> bfsShortestPath(const Graph& graph, int startCity, int endCity) //th
 }
 
 // this is to print a path of cities, the map STL was chosen for their use of two separate variable types
-void printPath(const vector<int>& path, map<const string,int,strCmp>& cityMap) {
+void printPath(const vector<int>& path, map<const string,int,strCmp>& cityMap) 
+{
     //this is where the reverse map is initialized to catalogue the cities visited
     map<int,string> idToName;
-    for(map<const string,int,strCmp>::iterator it = cityMap.begin(); it != cityMap.end(); ++it) {
-        string cityName = it->first;   // the city name (string) is assigned with the 1st parameter of the map
-        int cityID = it->second;       // the city ID (integer) is assigned with the 2nd parameter of the map
+    for(map<const string,int,strCmp>::iterator it = cityMap.begin(); it != cityMap.end(); ++it) 
+	{
+        string cityName = it->first;   // the city name(s) (string) is assigned with the 1st parameter of the map
+        int cityID = it->second;       // the city ID (integer) adjacency integer is assigned with the 2nd parameter of the map
         idToName[cityID] = cityName;   // store the integer value of the city name to the index of idToName map, in reverse map increasing its size
     }
 
     //Each city is to then be printed in the path
-    for(size_t i = 0; i < path.size(); i++) {
+    for(size_t i = 0; i < path.size(); i++) 
+	{
         int cityID = path[i];
-        cout << idToName[cityID]; // print the city name
+        cout << idToName[cityID]; // prints the visited city name
 
         // this is to add " to " between cities, the if statement is to check "to" isn't being printed after the last city
-        if(i < path.size() - 1) {
+        if(i < path.size() - 1) 
+		{
             cout << " to ";
         }
     }
