@@ -2,11 +2,14 @@
 World Airline Route Search for CSCE 2110 - Foundation of Data Structures
 
 ## Team Members
-- **Ben Grider** - Q1: Find shortest route between two cities
-- Q2: Find shortest route from initial city to final city, through a user specified # of intermediate cities
-- Q3: Shortest Closed walk
-- **Alan Ortega** - Report
-- **Nhu Pham** - Q4: Meeting point between three friends
+- **Ben Grider** -
+-   Q1: Find shortest route between two cities
+-   Q2: Find shortest route from initial city to final city, through a user specified # of intermediate cities
+-   Q3: Shortest Closed walk
+- **Alan Ortega** -
+-   Report
+- **Nhu Pham** -
+-   Q4: Meeting point between three friends
 
 ---
 
@@ -16,7 +19,8 @@ This program simulates a **world airline route system** using a graph data struc
 ---
 
 ## How to Compile
-Make sure `flight.txt` and `city.name` are in the same solder.
+Make sure `flight.txt` is in the same folder.
+g++ world_airlines.cpp -o world_airlines
 
 ```bash
 g++ -std=c++17 -O2 -o routeSearch routeSearch.cpp
