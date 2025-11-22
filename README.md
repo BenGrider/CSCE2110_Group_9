@@ -23,4 +23,5 @@ Make sure `flight.txt` is in the same folder.
 g++ world_airlines.cpp -o world_airlines
 
 ```bash
-g++ -std=c++17 -O2 -o routeSearch routeSearch.cpp
+g++ world_airlines.cpp -o world_airlines
+./world_airlines
