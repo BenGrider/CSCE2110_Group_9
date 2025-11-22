@@ -2,9 +2,9 @@
 World Airline Route Search for CSCE 2110 - Foundation of Data Structures
 
 ## Team Members
-- **Nhu Pham** - Q1: Find shortest route between two cities
-- **Ben Grider**
-- **Alan Ortega** -Q2: Find shortest route from initial city to final city, through a user specified # of intermediate cities
+- **Ben Grider** - Q1: Find shortest route between two cities \n Q2: Find shortest route from initial city to final city, through a user specified # of intermediate cities \n Q3: Shortest Closed walk
+- **Alan Ortega** - Report
+- **Nhu Pham** - Q4: Meeting point between three friends
 
 ---
 
