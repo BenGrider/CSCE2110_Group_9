@@ -8,11 +8,13 @@
 
 using namespace std;
 
+// Helper function to take the substring of a string at index of 7 to sanatize the input
 string getCityFromString(string line) {
     string cleanedString = line.substr(7);
     return cleanedString;
 }
 
+//Reads the input file and returns a hashmap
 unordered_map<string, vector<string>> readFile() {
     string line;
     ifstream flightDirectory("flight.txt");
@@ -53,6 +55,7 @@ unordered_map<string, vector<string>> readFile() {
     return map;
 }
 
+//Turns the hashmap of type <string, vector<string>> into an adjacency list of a 2D in vector
 vector<vector<int>> toAdjacencyList(unordered_map<string, vector<string>> map, vector<string> indexToCity ) {
     int size = indexToCity.size();
     vector<vector<int>> adjacencyList(size);
@@ -70,6 +73,7 @@ vector<vector<int>> toAdjacencyList(unordered_map<string, vector<string>> map, v
     return adjacencyList;
 }
 
+//Takes the original hashmap and prints the cities
 void printCities(unordered_map<string, vector<string>> map){
     int i = 0;
     for (pair<string, vector<string>> pair : map) {
@@ -78,7 +82,7 @@ void printCities(unordered_map<string, vector<string>> map){
 }
 
 //Q1: Shortest path A to B in X connections: Ben Grider & Nhu Pham)
-void functionOne(vector<vector<int>> adjacencyList, int from, int to, int maxConnections, vector<string> indexToCity) {
+void functionOne(vector<vector<int>>& adjacencyList, int from, int to, int maxConnections, vector<string>& indexToCity) {
     queue<int> q; 
     vector<int> distance(adjacencyList.size(), -1);
     vector<int> parent(adjacencyList.size(), -1);
@@ -156,6 +160,7 @@ void functionOne(vector<vector<int>> adjacencyList, int from, int to, int maxCon
 
 }
 
+//Helper function to provide a bfs
 bool bfsHelper(vector<vector<int>>& adjacencyList, int from, int to, vector<int>& route) {
     int size = adjacencyList.size();
     vector<int> parent(size, -1);
@@ -345,6 +350,7 @@ void functionFour(vector<vector<int>>& adjacencyList, vector<string>& indexToCit
     vector<vector<int>> dist(3, vector<int>(n, -1));
     vector<vector<int>> parent(3, vector<int>(n, -1));
 
+    //Breadth First Search
     auto bfs = [&](int k){
         queue<int> q;
         int s = src[k];
@@ -401,6 +407,7 @@ void functionFour(vector<vector<int>>& adjacencyList, vector<string>& indexToCit
     cout << endl << "----------------------------------------------------------------------" << endl;
 }
 
+//ChoseFunctionOne provides IO for when function 1 is chosen
 void choseFunctionOne(vector<string>& indexToCity , vector<vector<int>>& adjacencyList, unordered_map<string, vector<string>>& map) {
 
     int from, to, maxConnections;
@@ -422,6 +429,7 @@ void choseFunctionOne(vector<string>& indexToCity , vector<vector<int>>& adjacen
     if(from > upperBound || from < lowerBound || to < lowerBound || to > upperBound) {
         cout << "City is not in bounds does not exist, please try again" << endl << endl; 
         choseFunctionOne(indexToCity, adjacencyList, map);
+        return; // return to stop continuing code from this point after recursive call ends, in c would use goto instead
     }
 
     functionOne(adjacencyList, from, to, maxConnections, indexToCity);
@@ -430,6 +438,7 @@ void choseFunctionOne(vector<string>& indexToCity , vector<vector<int>>& adjacen
     
 }
 
+//ChoseFunctionTwo provides IO for when function 2 is chosen
 void choseFunctionTwo(vector<string>& indexToCity, vector<vector<int>>& adjacencyList, unordered_map<string, vector<string>>& map) {
 
     int from, to, connectOne, connectTwo;
@@ -453,12 +462,14 @@ void choseFunctionTwo(vector<string>& indexToCity, vector<vector<int>>& adjacenc
     if(from > upperBound || from < lowerBound || to < lowerBound || to > upperBound || connectOne < lowerBound || connectOne > upperBound || connectTwo < lowerBound || connectTwo > upperBound) {
         cout << "City is not in bounds does not exist, please try again" << endl << endl; 
         choseFunctionTwo(indexToCity, adjacencyList, map);
+        return;
     }
     functionTwo(adjacencyList, from, to, connectOne, connectTwo, indexToCity);
     
     return;
 }
 
+//ChoseFunctionThree provides IO for when function 3 is chosen
 void choseFunctionThree(vector<string>& indexToCity, vector<vector<int>>& adjacencyList, unordered_map<string, vector<string>>& map) {
 
     int startingCity;
@@ -474,6 +485,7 @@ void choseFunctionThree(vector<string>& indexToCity, vector<vector<int>>& adjace
     if(startingCity > upperBound || startingCity < lowerBound ) {
         cout << "City is not in bounds does not exist, please try again" << endl << endl; 
         choseFunctionThree(indexToCity, adjacencyList, map);
+        return;
     }
     functionThree(adjacencyList, startingCity, indexToCity);
     
@@ -482,6 +494,7 @@ void choseFunctionThree(vector<string>& indexToCity, vector<vector<int>>& adjace
 
 }
 
+//ChoseFunctionFour provides IO for when function 4 is chosen
 void choseFunctionFour(vector<string>& indexToCity, vector<vector<int>>& adjacencyList, unordered_map<string, vector<string>>& map) {
 
     int cityA, cityB, cityC;
@@ -499,6 +512,7 @@ void choseFunctionFour(vector<string>& indexToCity, vector<vector<int>>& adjacen
     if(cityA > upperBound || cityA < lowerBound || cityB < lowerBound || cityB > upperBound || cityC < lowerBound || cityC > upperBound) {
         cout << "City is not in bounds does not exist, please try again" << endl << endl; 
         choseFunctionFour(indexToCity, adjacencyList, map);
+        return;
     }
 
     functionFour(adjacencyList, indexToCity, cityA, cityB, cityC);
@@ -506,6 +520,7 @@ void choseFunctionFour(vector<string>& indexToCity, vector<vector<int>>& adjacen
     return;
 }
 
+//ChooseFuntion acts as the menu for our program
 bool chooseFunction(bool& initial) {
 
     if(initial) {
@@ -571,7 +586,24 @@ bool chooseFunction(bool& initial) {
             choseFunctionFour(indexToCity, adjacencyList, map);
             break;
         default: 
-            cout << "Exiting simulation" <<endl << endl << "Have a Great Day" << endl << endl;
+            cout << endl << endl; 
+            cout << "**********************************************************************" << endl;
+            cout << "**********************************************************************" << endl;
+            cout << R"(*  -.                 `|.           ( )             .`)              *)" << endl;
+            cout << R"(*   |:\-,              .| \.       (_.`            (_  )             *)" << endl;
+            cout << R"(*   |: `.------------------------------------.                 .`)   *)" << endl;
+            cout << R"(*   / /   o o o o o o o o o o o o o.-.o o   (_`.              (_  )  *)" << endl;
+            cout << R"(*  /_ \_       WAL    .     .=     |'|         `)        .`)         *)" << endl;
+            cout << R"(*       ``"""""""""""//    /  """"" `"""------"'        (_  )        *)" << endl;
+            cout << R"(*                   //    /                                          *)" << endl;
+            cout << "**********************************************************************" << endl;
+            cout << "**********************************************************************" << endl;
+            cout << "***************                                        ***************" << endl;
+            cout << "***********     Thank You for choosing World Airlines!     ***********" << endl;
+            cout << "***********         We Hope to see you again soon!         ***********" << endl;
+            cout << "***************                                        ***************" << endl;
+            cout << "**********************************************************************" << endl;
+            cout << "**********************************************************************" << endl << endl;
             return false;
 
     }
@@ -611,6 +643,9 @@ int main() {
     while(running) {
         running = chooseFunction(initial);
     }
+
+    return 0;
+}
 
     return 0;
 }
