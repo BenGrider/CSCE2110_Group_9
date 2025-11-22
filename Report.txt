@@ -1,2 +1,72 @@
-Data Structure for adjancancy matrix
-https://www.geeksforgeeks.org/cpp/map-vs-unordered_map-c/
+CSCE2110
+World Airline
+Design issues
+ 
+The major difficulty of this project is the representation of the flight network, and how to answer four different questions about route finding between two different cities. Flight data exists in flight.txt. For each city, the data lists all cities receiving direct flights. Our first task involved figuring out how to read this file, storing the data correctly, and making the route search fast.
+
+Another decision to make was to choose algorithms that would give us the shortest number of connections, which means the smallest number of edges because there are no weights on the flights. This naturally led to the use of Breadth-First Search (BFS) upon most of the questions.
+
+We also had to plan how to examine the routes in detail (i.e. print out a list of the visited cities) and handle failures. The difficulty in implementing the features to answer the four questions, and designing the functions to run the program to the specifications of the project was the formatting of the code and the use of graphs; adjacency matrices and adjacency lists were topics that would not be covered in the course material up until halfway through the semester—thus early efforts to address the project code was stifled by a lack of documentation of example code. The methods to implement adjacency matrices and adjacency lists were also not given code to practice and modify. Research was individualized to cover all corners of the project and to implement features to address one of the project directives, given to be addressed and cross-referenced.
+
+Data Structure chosen
+
+The original flight network was stored in a hashmap (unordered_map) and read from the file.
+•	Key: a "From" city
+•	Value: list of "To" cities it can reach directly
+
+We chose this because:
+•	Lookup by city name is O(1) on average.
+•	That's exactly how the file is structured.
+
+Our algorithms work directly on index-based graphs (0,1,2,…), so we kept an additional vector to store the city names in order.
+This gives a way to convert:
+ city name -> index
+index -> city name
+
+After reading the file, we converted the map to an adjacency list using integer indices.
+We chose adjacency lists because:
+•	This is the general approach to graph traversal with BFS and DFS.
+•	The memory requirement is low for sparse matrices.
+•	They give O(V + E) time for BFS, which is optimal.
+
+The use of STLs for the implementation of the project was informed greatly by the sample code provided by the “graphGen” and “WA” file which used in its vanilla code standard template libraries such as vector, and map, which was why standard template libraries such as queue was adopted into the group project as it was a pre-requisite feature of breadth first search function implementation which utilized a FIFO operation to find the shortest path using unweighted graphs.
+
+Other Remarks
+
+Our design in the implementation of the ui or the lack thereof—provided by the compilation and successful operation of the program—was as before informed by the sample code provided by the design document of the project which presented the adjacencies of the city path flight travel and how the sample code formatted the output of the user’s input. 
+
+Optimization Issues
+
+One effort to go and optimize the production of the project files and efficiency of the code is to split the code up further into separate dedicated spaces, such as a main driver file focused solely to the main function whilst accessing classes and their member functions in separate header and implementation files, rather than bunching up the whole program in one main function. There are also likely to be redundant code within the functions utilized which could’ve been implemented more efficiently or otherwise could’ve been removed altogether, reducing runtime. Due to the time sensitivity of the project, the implementation of such rewrites for a more focused vision of the project files could only be measured in slight adjustments to the code.
+
+Scalability
+
+Scaling the features of the project to be utilized for species collection in a larger geographic area should demonstrate the efficiency of the use of adjacency lists for project implementation as the run time remains O(V + E). If the project remained to use the adjacency matrices outlined by the “WA” and “graphGen” sample file code, the runtime operations to calculate the path traveled by the adjacent vertices in the matrices would have a runtime operation of O(V^2). 
+
+In smaller scale implementations of the graph, there would not be such an issue considered too egregious for the compiler to handle as the graph remains sparse, however by scaling up the features of the breadth first search functions, the graph is no longer sparse. Utilizing adjacency matrices rather than adjacency matrices would significantly slow down the runtime of the program. Outlined in section 14.4 of the zybooks chapter advanced graphs, the massive size of the adjacency matrices would be inefficient to use due to the aspect that vast majority of edges connecting vertices would be initialized as 0; there would be exponentially more non-adjacent vertices represented by edge value 0 for every adjacent vertex represented by edge value 1 in a single row or column. 
+
+In the sample files provided, for example, there are 140 cities, meaning in the adjacency matrix there would be at most 140 vertices each connected to a random city within the list of cities to visit in the “flight.txt” file, and thus there would also be 140 edges that would connect to these vertices at most. In the adjacency matrix there would be 140x140—or 19600—total elements to comb over, should the program be stressed tested to approximate the totality of the vertices of cities and their edges cases.
+
+Q1
+
+This question required:
+	A single BFS with a condition that the distance between start and finish could not exceed a given maximum connections.
+
+Q2
+
+This question required:
+	Running a BFS from A to C, then C to D, then D to B
+	Running a BFS from A to D, then D to C, then C to B
+	Then if no route was found on either, return a message stating that no route was found.
+	If a route was found, print that route
+	If both were viable, find which route was shorter and use that route
+Q3
+
+This question required:
+	A BFS with the break condition checking to see if the next neighbor is the starting city to create the shortest closed walk.
+	Reversing the path through back to the starting node to build the path needed to return to user
+Q4
+
+This question required:
+	Running a BFS from A, B, and C
+	For every city u, calculate the distance between them = distA[u] + distB[u] + distC[u]
